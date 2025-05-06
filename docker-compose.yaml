@@ -1,0 +1,72 @@
+services:
+  nginx:
+    build:
+      context: .
+      dockerfile: nginx.dockerfile
+    ports:
+      - 80:80
+    container_name: nginx
+    depends_on:
+      - php
+      - mysql
+    volumes:
+      - ./src:/var/www/html
+    networks:
+      - laravel
+
+  php:
+    build:
+      context: .
+      dockerfile: php.dockerfile
+    container_name: php
+    volumes:
+      - ./src:/var/www/html
+    networks:
+      - laravel
+
+  mysql:
+    image: mysql:lts
+    container_name: mysql
+    ports:
+      - 3306:3306
+    environment:
+      MYSQL_DATABASE: laraveldb
+      MYSQL_USER: laravel
+      MYSQL_PASSWORD: P@ssw0rd123
+      MYSQL_ROOT_PASSWORD: P@ssw0rd123
+    volumes:
+      - ./mysql:/var/lib/mysql
+    networks:
+      - laravel
+
+  composer:
+    image: composer:latest
+    container_name: composer
+    working_dir: /var/www/html
+    volumes:
+      - ./src:/var/www/html
+
+  artisan:
+    build:
+      context: .
+      dockerfile: php.dockerfile
+    container_name: artisan
+    working_dir: /var/www/html
+    entrypoint: ['php', 'artisan']
+    volumes:
+      - ./src:/var/www/html
+    networks:
+      - laravel
+
+  npm:
+    image: node:lts
+    container_name: npm
+    working_dir: /var/www/html
+    entrypoint: ['npm']
+    volumes:
+      - ./src:/var/www/html
+    networks:
+      - laravel
+
+networks:
+  laravel:
